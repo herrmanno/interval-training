@@ -183,8 +183,8 @@
             solutionButton.onclick = () => {
                 document.getElementById("interval").innerText = intervalNames[intervalIdx]
                 document.getElementById("notes").innerText = mode === "upwoards"
-                    ? keyName(keys[idx2]) + " ͢→ " + keyName(keys[idx1])
-                    : keyName(keys[idx1]) + " → " + keyName(keys[idx2])
+                    ? keyName(keys[idx2]) + "\u00a0 \u00a0" + keyName(keys[idx1])
+                    : keyName(keys[idx1]) + "\u00a0 \u00a0" + keyName(keys[idx2])
                 solutionEl.style.display = "flex"
                 solutionButton.disabled = true
             }
@@ -224,7 +224,7 @@
 
         function loadCheckboxes() {
             Array.prototype.forEach.call(document.getElementsByTagName("INPUT"), e => {
-                e.checked = "true" === localStorage.getItem(e.id)
+                e.checked = "true" === (localStorage.getItem(e.id) || "true")
             })
         }
 
