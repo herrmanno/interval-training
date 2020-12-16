@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background: peachpuff;
+        }
+
+        @media (min-height: 600px) {
+            .fieldsets {
+                margin-top: 48px;
+            }
+            .fieldsets, .button {
+                margin-bottom: 36px;
+            }
+        }
+
+        .fieldsets {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .fieldset {
+            width: 400px;
+            max-width: 90vw;
+            margin-bottom: 16px;
+            color: salmon;
+            border-color: lightsalmon;
+            border-radius: 8px;
+            border-width: 2px;
+            border-style: dashed;
+        }
+        .fieldset-intervals > label {
+            display: inline-block;
+            min-width: 150px;
+        }
+        .fieldset-modes > label {
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .solution-wrapper {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .solution {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+
+            width: 400px;
+            margin: 24px;
+            padding: 36px;
+            
+            color: plum;
+            background: antiquewhite;
+            border-radius: 8px;
+            font-size: 20px;
+        }
+        .solution > .interval {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .solution > .notes { }
+
+        button {
+            font-size: 16px;
+            width: 180px;
+            color: plum;
+            background: transparent;
+            border: 2px solid plum;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 12px;
+            outline: none;
+            transition: all .3s;
+        }
+        button:active, button:hover {
+            background: antiquewhite;
+        }
+        button:disabled {
+            opacity: .4;
+        }
+    </style>
+</head>
+<body>
+    <div class="fieldsets">
+        <fieldset class="fieldset fieldset-intervals">
+            <legend>Intervalle</legend>
+            <label><input id="all_intervals" type="checkbox" checked onchange="toggleAllIntervals(event)">Alle</label>
+            <br>
+            <br>
+            <label><input id="prime" type="checkbox" checked>Prime</label>
+            <br>
+            <label><input id="kleine_sekunde" type="checkbox" checked>Kleine Sekunde</label>
+            <label><input id="grosse_sekunde" type="checkbox" checked>Grosse Sekunde</label>
+            <br>
+            <label><input id="kleine_terz" type="checkbox" checked>Kleine Terz</label>
+            <label><input id="grosse_terz" type="checkbox" checked>Grosse Terz</label>
+            <br>
+            <label><input id="reine_quarte" type="checkbox" checked>Reine Quarte</label>
+            <label><input id="uebermaessige_quarte" type="checkbox" checked>Übermäßige Quarte</label>
+            <br>
+            <label><input id="quinte" type="checkbox" checked>Quinte</label>
+            <br>
+            <label><input id="kleine_sexte" type="checkbox" checked>Kleine Sexte</label>
+            <label><input id="grosse_sexte" type="checkbox" checked>Grosse Sexte</label>
+            <br>
+            <label><input id="kleine_septime" type="checkbox" checked>Kleine Septime</label>
+            <label><input id="grosse_septime" type="checkbox" checked>Grosse Septime</label>
+            <br>
+            <label><input id="oktave" type="checkbox" checked>Oktave</label>
+        </fieldset>
+        <fieldset class="fieldset fieldset-modes">
+            <legend>Reihenfolge</legend>
+            <label><input id="all_modes" type="checkbox" checked onchange="toggleAllModes(event)">Alle</label>
+            <br>
+            <br>
+            <label><input id="upwoards" type="checkbox" checked>Aufsteigend</label>
+            <label><input id="downwoards" type="checkbox" checked>Absteigend</label>
+            <label><input id="simultaneously" type="checkbox" checked>Gleichzeitig</label>
+        </fieldset>
+    </div>
+
+    <div class="buttons">
+        <button id="play" onclick="play()">Play</button>
+        <button id="show_solution" disabled>Lösung anzeigen</button>
+    </div>
+    <div id="solution" class="solution-wrapper" style="display: none;">
+        <div class="solution">
+            <span id="interval" class="interval"></span>
+            <span id="notes" class="notes"></span>
+        </div>
+    </div>
+    <script>
+        loadCheckboxes()
+
+        var playButton = document.getElementById("play")
+        var solutionButton = document.getElementById("show_solution")
+        var solutionEl = document.getElementById("solution")
+
+        var keys = ["C1", "Csharp1", "D1", "Dsharp1", "E1", "F1", "Fsharp1", "G1", "Gsharp1", "A1", "Bb1", "H1", "C2", "Csharp2", "D2", "Dsharp2", "E2", "F2", "Fsharp2", "G2", "Gsharp2", "A2", "Bb2", "H2", "C3"]
+        var notes = keys.map(key => new Audio("notes/" + key + ".wav"))
+        var intervals = ["prime", "kleine_sekunde", "grosse_sekunde", "kleine_terz", "grosse_terz", "reine_quarte", "uebermaessige_quarte", "quinte", "kleine_sexte", "grosse_sexte", "kleine_septime", "grosse_septime", "oktave"]
+        var intervalNames = ["Prime", "Kleine Sekunde", "Grosse Sekunde", "Kleine Terz", "Grosse Terz", "Reine Quarte", "Übermäßige Quarte", "Quinte", "Kleine Sexte", "Grosse Sexte", "Kleine Septime", "Grosse Septime", "Oktave"]
+        var modes = ["upwoards", "downwoards", "simultaneously"]
+
+        function keyName(s) {
+            return s.replace(/\d/, "").replace("sharp", "#")
+        }
+
+        function play() {
+            playButton.disabled = true
+            solutionButton.disabled = true
+            solutionEl.style.display = "none"
+
+            var toggledIntervals = intervals.filter(i => document.getElementById(i).checked)
+            var interval = toggledIntervals[Math.floor(Math.random() * toggledIntervals.length)]
+            var intervalIdx = intervalLength = intervals.indexOf(interval)
+
+            var idx1 = Math.floor(Math.random() * (notes.length - intervalLength)) 
+            var idx2 = idx1 + intervalLength
+
+            var toggledModes = modes.filter(i => document.getElementById(i).checked)
+            var mode = toggledModes[Math.floor(Math.random() * toggledModes.length)]
+
+            solutionButton.onclick = () => {
+                document.getElementById("interval").innerText = intervalNames[intervalIdx]
+                document.getElementById("notes").innerText = mode === "upwoards"
+                    ? keyName(keys[idx2]) + " ͢→ " + keyName(keys[idx1])
+                    : keyName(keys[idx1]) + " → " + keyName(keys[idx2])
+                solutionEl.style.display = "flex"
+                solutionButton.disabled = true
+            }
+
+            var onPlayed = () => {
+                playButton.disabled = false
+                solutionButton.disabled = false
+            }
+
+            if (mode == "upwoards") {
+                playUpwoards(notes[idx1], notes[idx2]).then(onPlayed)
+            }
+            else if (mode == "downwoards") {
+                playUpwoards(notes[idx2], notes[idx1]).then(onPlayed)
+            } else if (mode == "simultaneously") {
+                playSimultaneously(notes[idx2], notes[idx1]).then(onPlayed)
+            }
+
+            storeCheckboxes()
+        }
+
+        function playUpwoards(n1, n2) {
+            return new Promise(r => {
+                n1.onended = () => (n1.onended = null, n2.play())
+                n2.onended = r
+                n1.play()
+            })
+        }
+
+        function playSimultaneously(n1, n2) {
+            return new Promise(r => {
+                n2.onended = r
+                n1.play()
+                n2.play()
+            })
+        }
+
+        function loadCheckboxes() {
+            Array.prototype.forEach.call(document.getElementsByTagName("INPUT"), e => {
+                e.checked = "true" === localStorage.getItem(e.id)
+            })
+        }
+
+        function storeCheckboxes() {
+            Array.prototype.forEach.call(document.getElementsByTagName("INPUT"), e => {
+                localStorage.setItem(e.id, e.checked)
+            })
+        }
+
+        /** UI **/
+        function toggleAllIntervals(e) {
+            intervals.forEach(i => document.getElementById(i).checked = e.currentTarget.checked)
+        }
+
+        function toggleAllModes(e) {
+            modes.forEach(i => document.getElementById(i).checked = e.currentTarget.checked)
+        }
+    </script>
+</body>
+</html>
